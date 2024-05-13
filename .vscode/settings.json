@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Dentge.sln"
+    "dotnet.defaultSolution": "Psychic-Journey.sln"
 }
