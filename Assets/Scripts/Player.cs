@@ -36,6 +36,7 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
+        //Set a max fall speed
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxVelocity);
     }
 
@@ -49,9 +50,10 @@ public class Player : MonoBehaviour
         facingBlockCheck();
     }
 
+    //Flip the player sprite
     void Flip()
     {
-        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
+        if ((isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f) && isGrounded)
         {
             isFacingRight = !isFacingRight;
             spriteRenderer.flipX = !spriteRenderer.flipX;
@@ -87,6 +89,8 @@ public class Player : MonoBehaviour
         {
             jumpCharge = MathF.Min(jumpCharge, 20);
 
+            //If the player is facing a block, the player will jump in the opposite 
+            //direction at a slower speed and slightly different angle
             if (isFacingBlock)
             {
                 rb.velocity = new Vector2(-horizontal / 1.3f * speed, MathF.Floor(jumpCharge));
@@ -110,6 +114,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    //Rebound the player when it hits a wall
     void OnCollisionEnter2D(Collision2D coll)
     {
         GroundCheck();
@@ -117,12 +122,24 @@ public class Player : MonoBehaviour
         if (!isGrounded)
         {
             float currentVelocity = lastVelocity.magnitude;
-            Vector3 direction = Vector3.Reflect(lastVelocity.normalized, coll.contacts[0].normal);
+            Vector3 direction;
+
+            //If the player hits his head on the ceiling
+            //The coll.contacts[0].normal.y allways return -1 when the player hits his head
+            if (coll.contacts[0].normal.y == -1)
+            {
+                direction = Vector3.Reflect(lastVelocity.normalized, coll.contacts[0].normal) + new Vector3(0, 0.5f, 0);
+            }
+            else
+            {
+                direction = Vector3.Reflect(lastVelocity.normalized, coll.contacts[0].normal);
+            }
 
             rb.velocity = direction * (currentVelocity * bounceMultiplier);
         }
     }
 
+    //Check if the player is facing a block
     bool facingBlockCheck()
     {
         RaycastHit2D hit = Physics2D.Raycast(transform.position + facingBlockRaycastOffset, isFacingRight ? Vector2.right : Vector2.left, rayCastDistanceFacingBlock);
@@ -131,6 +148,7 @@ public class Player : MonoBehaviour
     }
 
 
+    //Draw the rays in the editor
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
